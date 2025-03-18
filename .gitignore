@@ -1,0 +1,6 @@
+model
+model/*
+vosk-model.*
+*.wav
+*.py
+clone.html

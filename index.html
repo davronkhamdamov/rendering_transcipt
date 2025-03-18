@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Transcipt</title>
+  </head>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Golos+Text:wght@400..900&display=swap");
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      scroll-behavior: smooth;
+    }
+    .box {
+      display: flex;
+      width: 50%;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    #pause,
+    #start {
+      background: transparent;
+      border: none;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      font-family: "Golos Text", sans-serif;
+    }
+    #pause:hover,
+    #start:hover {
+      cursor: pointer;
+    }
+    .buttons {
+      display: flex;
+      gap: 10px;
+    }
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    video {
+      width: 100%;
+      height: 50%;
+      border-radius: 8px;
+    }
+    #transcipt {
+      width: 100%;
+      height: 50%;
+      transition: 0.3s;
+      user-select: none;
+    }
+
+    .transcipt_wrapper {
+      width: 100%;
+      height: 450px;
+      overflow: hidden;
+      background: #f2f2f2;
+      border-radius: 8px;
+    }
+    #transcipt div {
+      transition: transform 0.5s ease-out;
+      font-size: 30px;
+      font-family: "Golos Text", sans-serif;
+      font-weight: 800;
+      text-align: center;
+      letter-spacing: 1px;
+      cursor: pointer;
+    }
+    .video_wrapper {
+      position: relative;
+      width: 100%;
+      height: auto;
+      overflow: hidden;
+      border-radius: 8px;
+    }
+    .currentTime {
+      width: 100%;
+      height: 50px;
+      bottom: 0;
+      position: absolute;
+      padding: 10px;
+      display: flex;
+      align-items: end;
+      gap: 5px;
+    }
+    .current_time {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+    }
+    #currentRange {
+      width: 100%;
+    }
+    #currentStartTime,
+    #currentEndTime {
+      color: white;
+    }
+    .transcript_word {
+      padding: 3px 5px;
+      border-radius: 10px;
+      transition: 0.3s;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      height: 6px;
+      background: #ddd;
+      border-radius: 3px;
+      outline: none;
+      transition: background 0.3s;
+      margin: 5px 0;
+    }
+
+    input[type="range"]:hover {
+      background: #ccc;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      background: dodgerblue;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      cursor: pointer;
+      box-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
+      transition: background 0.3s, transform 0.2s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      background: rgb(52, 153, 254);
+      transform: scale(1.15);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      background: dodgerblue;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      cursor: pointer;
+      box-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
+      transition: background 0.3s, transform 0.2s;
+    }
+
+    input[type="range"]::-moz-range-thumb:hover {
+      background: dodgerblue;
+      transform: scale(1.15);
+    }
+
+    input[type="range"]::-moz-range-track {
+      background: #ddd;
+      height: 6px;
+      border-radius: 3px;
+    }
+    .transcript_text {
+      display: flex;
+      gap: 5px;
+      justify-content: center;
+      position: relative;
+    }
+
+    .transcript_text::before {
+      content: "";
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 2550, 0.3);
+      backdrop-filter: blur(2px);
+      position: absolute;
+    }
+    .transcript_text.focus::before {
+      box-shadow: 0 0 0 transparent;
+      background: transparent;
+      backdrop-filter: blur(0);
+      position: absolute;
+    }
+
+    input[type="range"]:focus {
+      outline: none;
+    }
+  </style>
+  <body>
+    <div class="box">
+      <div class="video_wrapper">
+        <video src="./input.mp4"></video>
+        <div class="currentTime">
+          <div class="buttons">
+            <button id="start">
+              <svg
+                stroke="currentColor"
+                fill="#fff"
+                stroke-width="0"
+                viewBox="0 0 384 512"
+                height="20px"
+                width="20px"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80L0 432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"
+                ></path>
+              </svg>
+            </button>
+            <button id="pause" style="display: none">
+              <svg
+                stroke="currentColor"
+                fill="#fff"
+                stroke-width="0"
+                viewBox="0 0 320 512"
+                height="20px"
+                width="20px"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M48 64C21.5 64 0 85.5 0 112L0 400c0 26.5 21.5 48 48 48l32 0c26.5 0 48-21.5 48-48l0-288c0-26.5-21.5-48-48-48L48 64zm192 0c-26.5 0-48 21.5-48 48l0 288c0 26.5 21.5 48 48 48l32 0c26.5 0 48-21.5 48-48l0-288c0-26.5-21.5-48-48-48l-32 0z"
+                ></path>
+              </svg>
+            </button>
+          </div>
+          <div class="current_time">
+            <div style="display: flex; justify-content: space-between">
+              <span id="currentStartTime">--:--</span>
+              <span id="currentEndTime">--:--</span>
+            </div>
+            <input type="range" value="0" id="currentRange" />
+          </div>
+        </div>
+      </div>
+      <!-- <button>Full screen</button> -->
+      <div class="transcipt_wrapper">
+        <div id="transcipt"></div>
+      </div>
+    </div>
+    <script>
+      const video = document.querySelector("video");
+      const transcipt = document.querySelector("#transcipt");
+      const start = document.getElementById("start");
+      const pause = document.getElementById("pause");
+
+      start.addEventListener("click", () => {
+        video.play();
+        start.style.display = "none";
+        pause.style.display = "block";
+      });
+
+      video.addEventListener("click", () => {
+        video.play();
+        start.style.display = "none";
+        pause.style.display = "block";
+      });
+
+      video.addEventListener("dblclick", () => {
+        const box = document.querySelector(".box");
+        document.exitFullscreen();
+        box.requestFullscreen();
+      });
+
+      pause.addEventListener("click", () => {
+        video.pause();
+        pause.style.display = "none";
+        start.style.display = "block";
+      });
+
+      // Fetch transcript data
+      fetch("./input.json")
+        .then((res) => res.json())
+        .then((data) => {
+          // Render transcript
+          data.forEach((item) => {
+            const div = document.createElement("div");
+            div.addEventListener("click", () => {
+              video.currentTime = item.start + 0.1;
+            });
+            item.one_by_one.forEach((e) => {
+              const text = document.createElement("p");
+              text.classList.add(e.start + "-" + e.end);
+              text.classList.add("transcript_word");
+              text.textContent = e.word;
+              div.appendChild(text);
+            });
+            div.classList.add("transcript_text");
+            div.classList.add(item.start + "-" + item.end);
+            transcipt.appendChild(div);
+          });
+
+          // Start syncing when video plays
+          video.addEventListener("play", () =>
+            requestAnimationFrame(() => updateTranscript(data))
+          );
+
+          // Initialize progress bar control
+          const currentRange = document.getElementById("currentRange");
+          currentRange.addEventListener("change", () => {
+            video.currentTime = (currentRange.value / 100) * video.duration;
+          });
+        });
+
+      // Update function
+      function updateTranscript(data) {
+        const currentStartTime = document.getElementById("currentStartTime");
+        const currentEndTime = document.getElementById("currentEndTime");
+        const currentRange = document.getElementById("currentRange");
+
+        const currentTime = video.currentTime;
+        const tolerance = 0.05; // 100ms tolerance window
+
+        // Update progress bar
+        currentRange.value = (video.currentTime / video.duration) * 100;
+
+        // Update current time display
+        currentStartTime.textContent =
+          String(Math.floor(video.currentTime / 60)).padStart(2, "0") +
+          ":" +
+          String(Math.floor(video.currentTime % 60)).padStart(2, "0");
+        const remainingTime = video.duration - video.currentTime;
+        currentEndTime.textContent =
+          String(Math.floor(remainingTime / 60)).padStart(2, "0") +
+          ":" +
+          String(Math.floor(remainingTime % 60)).padStart(2, "0");
+
+        // Find current transcript sentence and word
+        const currentTranscript = data.find(
+          (item) =>
+            item.start - tolerance <= currentTime &&
+            item.end + tolerance >= currentTime
+        );
+        const currentTranscriptWord = currentTranscript?.one_by_one.find(
+          (item) =>
+            item.start - tolerance <= currentTime &&
+            item.end + tolerance >= currentTime
+        );
+
+        const transcriptDivs = document.querySelectorAll(".transcript_text");
+        const transcriptWords = document.querySelectorAll(".transcript_word");
+
+        // Highlight word
+        transcriptWords.forEach((div) => {
+          if (currentTranscriptWord) {
+            const className = `${currentTranscriptWord.start}-${currentTranscriptWord.end}`;
+            if (div.classList.contains(className)) {
+              div.style.background = `dodgerblue`;
+              div.style.color = `white`;
+            } else {
+              div.style.background = `transparent`;
+              div.style.color = `black`;
+            }
+          } else {
+            // Reset if no word matched
+            div.style.background = `transparent`;
+            div.style.color = `black`;
+          }
+        });
+
+        // Highlight sentence
+        transcriptDivs.forEach((div, i) => {
+          if (currentTranscript) {
+            const className = `${currentTranscript.start}-${currentTranscript.end}`;
+            if (div.classList.contains(className)) {
+              transcriptDivs.forEach((div2) => {
+                div2.style.transform = `scale(1)`;
+                transcipt.style.transform = `translate(0, -${i * 42 - 15}px)`;
+                if (div != div2) {
+                  div2.classList.remove("focus");
+                }
+              });
+              div.classList.add("focus");
+              div.style.transform = `scale(1.05)`;
+            }
+          } else {
+            // Reset if no sentence matched
+            div.classList.remove("focus");
+            div.style.transform = `scale(1)`;
+          }
+        });
+
+        // Continue syncing
+        if (!video.paused && !video.ended) {
+          requestAnimationFrame(() => updateTranscript(data));
+        }
+      }
+    </script>
+  </body>
+</html>
