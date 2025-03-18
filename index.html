@@ -48,12 +48,12 @@
     }
     video {
       width: 100%;
-      height: 50%;
+      height: 30dvh;
       border-radius: 8px;
     }
     #transcipt {
       width: 100%;
-      height: 50%;
+      height: 68dvh;
       transition: 0.3s;
       user-select: none;
     }
@@ -67,7 +67,7 @@
     }
     #transcipt div {
       transition: transform 0.5s ease-out;
-      font-size: 30px;
+      font-size: 25px;
       font-family: "Golos Text", sans-serif;
       font-weight: 800;
       text-align: center;
@@ -84,7 +84,7 @@
     .currentTime {
       width: 100%;
       height: 50px;
-      bottom: 0;
+      bottom: 10px;
       position: absolute;
       padding: 10px;
       display: flex;
@@ -188,6 +188,11 @@
     input[type="range"]:focus {
       outline: none;
     }
+    @media (max-width: 768px) {
+      .box {
+        width: 100%;
+      }
+    }
   </style>
   <body>
     <div class="box">
@@ -235,7 +240,6 @@
           </div>
         </div>
       </div>
-      <!-- <button>Full screen</button> -->
       <div class="transcipt_wrapper">
         <div id="transcipt"></div>
       </div>
@@ -258,23 +262,15 @@
         pause.style.display = "block";
       });
 
-      video.addEventListener("dblclick", () => {
-        const box = document.querySelector(".box");
-        document.exitFullscreen();
-        box.requestFullscreen();
-      });
-
       pause.addEventListener("click", () => {
         video.pause();
         pause.style.display = "none";
         start.style.display = "block";
       });
 
-      // Fetch transcript data
       fetch("./input.json")
         .then((res) => res.json())
         .then((data) => {
-          // Render transcript
           data.forEach((item) => {
             const div = document.createElement("div");
             div.addEventListener("click", () => {
@@ -292,31 +288,26 @@
             transcipt.appendChild(div);
           });
 
-          // Start syncing when video plays
           video.addEventListener("play", () =>
             requestAnimationFrame(() => updateTranscript(data))
           );
 
-          // Initialize progress bar control
           const currentRange = document.getElementById("currentRange");
           currentRange.addEventListener("change", () => {
             video.currentTime = (currentRange.value / 100) * video.duration;
           });
         });
 
-      // Update function
       function updateTranscript(data) {
         const currentStartTime = document.getElementById("currentStartTime");
         const currentEndTime = document.getElementById("currentEndTime");
         const currentRange = document.getElementById("currentRange");
 
         const currentTime = video.currentTime;
-        const tolerance = 0.05; // 100ms tolerance window
+        const tolerance = 0.05;
 
-        // Update progress bar
         currentRange.value = (video.currentTime / video.duration) * 100;
 
-        // Update current time display
         currentStartTime.textContent =
           String(Math.floor(video.currentTime / 60)).padStart(2, "0") +
           ":" +
@@ -327,7 +318,6 @@
           ":" +
           String(Math.floor(remainingTime % 60)).padStart(2, "0");
 
-        // Find current transcript sentence and word
         const currentTranscript = data.find(
           (item) =>
             item.start - tolerance <= currentTime &&
@@ -342,7 +332,6 @@
         const transcriptDivs = document.querySelectorAll(".transcript_text");
         const transcriptWords = document.querySelectorAll(".transcript_word");
 
-        // Highlight word
         transcriptWords.forEach((div) => {
           if (currentTranscriptWord) {
             const className = `${currentTranscriptWord.start}-${currentTranscriptWord.end}`;
@@ -354,35 +343,29 @@
               div.style.color = `black`;
             }
           } else {
-            // Reset if no word matched
             div.style.background = `transparent`;
             div.style.color = `black`;
           }
         });
-
-        // Highlight sentence
         transcriptDivs.forEach((div, i) => {
           if (currentTranscript) {
             const className = `${currentTranscript.start}-${currentTranscript.end}`;
             if (div.classList.contains(className)) {
               transcriptDivs.forEach((div2) => {
+                div.style.height = "36px";
                 div2.style.transform = `scale(1)`;
-                transcipt.style.transform = `translate(0, -${i * 42 - 15}px)`;
-                if (div != div2) {
-                  div2.classList.remove("focus");
-                }
+                transcipt.style.transform = `translate(0, -${i * 36 - 50}px)`;
+                div2.classList.remove("focus");
               });
               div.classList.add("focus");
               div.style.transform = `scale(1.05)`;
             }
           } else {
-            // Reset if no sentence matched
             div.classList.remove("focus");
             div.style.transform = `scale(1)`;
           }
         });
 
-        // Continue syncing
         if (!video.paused && !video.ended) {
           requestAnimationFrame(() => updateTranscript(data));
         }
